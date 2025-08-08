@@ -39,7 +39,7 @@ export default function Page() {
           { id: editingVehicle.id, data },
           {
             onSuccess: () => {
-              reset();
+              reset({ brand: '', model: '', year: '' });
               setEditingVehicle(null);
             },
           }
@@ -47,7 +47,7 @@ export default function Page() {
       } else {
         addVehicle.mutate(data, {
           onSuccess: () => {
-            reset();
+            reset({ brand: '', model: '', year: '' });
           },
         });
       }
@@ -135,52 +135,56 @@ export default function Page() {
         {/* Desna strana - lista */}
         <div className='w-full md:w-2/3 space-y-4'>
           <h2 className='text-2xl font-bold mb-4 text-center'>Lista vozila</h2>
-          {vehiclesQuery.data?.map((v) => (
-            <div
-              key={v.id}
-              className='p-4 bg-white rounded shadow-sm flex flex-col gap-2'
-            >
-              <div className='flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3'>
-                <div>
-                  <p className='font-semibold'>
-                    {v.brand} {v.model}
-                  </p>
-                  <p className='text-sm text-gray-500'>{v.year}</p>
+          {vehiclesQuery.data?.length === 0 ? (
+            <p className='text-center text-gray-500'>Nema unetih vozila.</p>
+          ) : (
+            vehiclesQuery.data?.map((v) => (
+              <div
+                key={v.id}
+                className='p-4 bg-white rounded shadow-sm flex flex-col gap-2'
+              >
+                <div className='flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3'>
+                  <div>
+                    <p className='font-semibold'>
+                      {v.brand} {v.model}
+                    </p>
+                    <p className='text-sm text-gray-500'>{v.year}</p>
+                  </div>
+
+                  <div className='flex flex-row gap-2'>
+                    <button
+                      onClick={() => handleEdit(v)}
+                      className='text-blue-600 hover:underline text-left'
+                    >
+                      Izmeni
+                    </button>
+
+                    <button
+                      onClick={() => toggleServices(v.id)}
+                      className='text-green-600 hover:underline text-left'
+                    >
+                      {selectedVehicleId === v.id
+                        ? 'Sakrij servise'
+                        : 'Vidi servise'}
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(v.id)}
+                      className='text-red-600 hover:underline text-left'
+                    >
+                      Obriši
+                    </button>
+                  </div>
                 </div>
 
-                <div className='flex flex-row gap-2'>
-                  <button
-                    onClick={() => handleEdit(v)}
-                    className='text-blue-600 hover:underline text-left'
-                  >
-                    Izmeni
-                  </button>
-
-                  <button
-                    onClick={() => toggleServices(v.id)}
-                    className='text-green-600 hover:underline text-left'
-                  >
-                    {selectedVehicleId === v.id
-                      ? 'Sakrij servise'
-                      : 'Vidi servise'}
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(v.id)}
-                    className='text-red-600 hover:underline text-left'
-                  >
-                    Obriši
-                  </button>
-                </div>
+                {selectedVehicleId === v.id && (
+                  <div className='mt-2'>
+                    <ServicesList vehicleId={v.id} />
+                  </div>
+                )}
               </div>
-
-              {selectedVehicleId === v.id && (
-                <div className='mt-2'>
-                  <ServicesList vehicleId={v.id} />
-                </div>
-              )}
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

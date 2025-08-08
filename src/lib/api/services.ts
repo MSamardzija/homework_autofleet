@@ -1,6 +1,8 @@
 import { Service } from '@/types/globals';
 
-let services: Service[] = [
+const STORAGE_KEY = 'services';
+
+const defaultServices: Service[] = [
   {
     id: 1,
     vehicleId: 1,
@@ -19,51 +21,65 @@ let services: Service[] = [
   },
 ];
 
-let lastId = services.length;
+function loadServices(): Service[] {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    return JSON.parse(stored);
+  } else {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultServices));
+    return defaultServices;
+  }
+}
+
+function saveServices(services: Service[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(services));
+}
+
+let lastId = defaultServices.length;
 
 export const serviceAPI = {
   getAll: async (vehicleId: number): Promise<Service[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(services.filter((s) => s.vehicleId === vehicleId));
-      }, 300);
-    });
+    await new Promise((res) => setTimeout(res, 300));
+    const allServices = loadServices();
+    lastId = allServices.reduce((max, s) => (s.id > max ? s.id : max), 0);
+    return allServices.filter((s) => s.vehicleId === vehicleId);
   },
 
-  add: async (service: Omit<Service, 'id'>): Promise<Service> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        lastId++;
-        const newService = { ...service, id: lastId };
-        services.push(newService);
-        resolve(newService);
-      }, 300);
-    });
+  add: async (data: Omit<Service, 'id'>): Promise<Service> => {
+    await new Promise((res) => setTimeout(res, 300));
+    const allServices = loadServices();
+    const newService = { ...data, id: ++lastId };
+    allServices.push(newService);
+    saveServices(allServices);
+    return newService;
   },
 
   update: async (
     id: number,
     data: Omit<Service, 'id'>
   ): Promise<Service | null> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const index = services.findIndex((s) => s.id === id);
-        if (index === -1) {
-          resolve(null);
-          return;
-        }
-        services[index] = { id, ...data };
-        resolve(services[index]);
-      }, 300);
-    });
+    await new Promise((res) => setTimeout(res, 300));
+    const allServices = loadServices();
+    const index = allServices.findIndex((s) => s.id === id);
+    if (index === -1) return null;
+    allServices[index] = { id, ...data };
+    saveServices(allServices);
+    return allServices[index];
   },
 
   remove: async (id: number): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        services = services.filter((s) => s.id !== id);
-        resolve(true);
-      }, 300);
-    });
+    await new Promise((res) => setTimeout(res, 300));
+    let allServices = loadServices();
+    allServices = allServices.filter((s) => s.id !== id);
+    saveServices(allServices);
+    return true;
+  },
+
+  removeByVehicleId: async (vehicleId: number): Promise<void> => {
+    await new Promise((res) => setTimeout(res, 300));
+    let allServices = loadServices();
+    allServices = allServices.filter((s) => s.vehicleId !== vehicleId);
+    saveServices(allServices);
   },
 };

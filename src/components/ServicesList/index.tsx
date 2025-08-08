@@ -92,7 +92,7 @@ export default function ServicesList({ vehicleId }: ServicesListProps) {
           <label className='block mb-1 font-medium'>Cena</label>
           <input
             type='number'
-            step='0.01'
+            step='1'
             {...register('price', { valueAsNumber: true })}
             className='input'
           />
